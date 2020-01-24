@@ -71,3 +71,9 @@ figure ('Name','Masseverlust-Rate')
 plot(time_nummed,masse_diff_rate)
 xlabel('Zeit')
 ylabel('Masseverlust Rate')
+
+sound = 0;
+if sound == 1
+sound(masse_diff);
+sound(masse_diff_rate);
+end
