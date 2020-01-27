@@ -1,18 +1,42 @@
 %% Reaction Wheel - Drucktest -
 %%
 
-%Datumsformat: HH:mm:ss.SSS
+%% Aufräumen
+clc
+clear plot
+clear
+
 %Formel p*v = R*T
 % v = (R*T)/p
 % p*V = m*R*T
 
-%% Konstanten
+%% Daten laden
+
+data  = fileread('reaction_wheel_dichtigkeitstest.log');
+data1=splitlines(data);
+data1 = data1(~cellfun('isempty', data1')); %delete empty rows
+data1(1:474,:)=[];
+data2=split(data1);
+data2 = strip(data2,'left','[');
+data2 = strip(data2,'right',']');
+data3 = split(data2(:,6),';');
+T = str2double(data3(:,1));
+p = str2double(data3(:,2));
+%date=strcat(data2(:,5),'-',data2(:,2),'-',data2(:,3));
+%date = datetime(date,'ConvertFrom','yyyy-mm-dd');
+time=datetime(data2(:,4),'Format','HH:mm:ss.SSS');
+day=str2double(data2(:,3));
+
+%% Konstanten und Variablen definieren
+
 R = 287; %J/kg*K spezifische Gaskonstante Luft
-data3 = [temp,pressure];
+data3 = [T,p];
 laenge2 = length(data3);
 v = zeros(laenge2,1); %spezifisches Volumen
 roh = zeros(laenge2,1); %Dichte über die Messwerte
 dataneu = zeros(laenge2,2); %damit Daten nicht überschrieben werden
+
+%% Berechnung
 
 for i = 1:laenge2
     dataneu(i,1) = data3(i,1)+273.15; %umrechnung in Kelvin
@@ -25,12 +49,11 @@ for i = 1:laenge2
     roh(i) = 1/v(i); %Berechnung der Dichte
 end
 
-
 %% an Zeit anpassen
 
 time_nummed=datenum(time)-min(datenum(time))+datenum(day);
 
-%% Verlorene Masse
+%% Verlorene Masse - Berechnung
 
 maxv = max(v);
 minv = min(v);
@@ -56,7 +79,6 @@ plot(time_nummed,roh)
 xlabel('Zeit')
 ylabel('Dichte [kg/m^3]')
 
-
 figure ('Name','spezifisches Volumen')
 plot(time_nummed,v)
 xlabel('Zeit')
@@ -72,8 +94,11 @@ plot(time_nummed,masse_diff_rate)
 xlabel('Zeit')
 ylabel('Masseverlust Rate')
 
-sound = 0;
-if sound == 1
+%% Sound effekte
+
+for i = 1:laenge2
+spectrum(i) = fft(masse_diff_rate(i));
+end
+ampl_spectrum = abs(spectrum);
 sound(masse_diff);
 sound(masse_diff_rate);
-end
